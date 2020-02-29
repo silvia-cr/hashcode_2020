@@ -17,4 +17,4 @@ class Library(object):
         self.books = books
 
     def __repr__(self):
-        return f'[Library {str(self.id)}: Books: {self.books}]'
+        return f'\n[Library {str(self.id)}: Books: {self.books}]'
