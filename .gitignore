@@ -1,0 +1,4 @@
+src/examples/*
+*__pycache__
+.idea/*
+Pipfile.lock
