@@ -1,14 +1,12 @@
-from operator import attrgetter
-
 from models import Book, Library
 
 filenames = [
     'examples/a_example.txt',
-    # 'examples/b_read_on.txt',
-    # 'examples/c_incunabula.txt',
-    # 'examples/d_tough_choices.txt',
-    # 'examples/e_so_many_books.txt',
-    # 'examples/f_libraries_of_the_world.txt',
+    'examples/b_read_on.txt',
+    'examples/c_incunabula.txt',
+    'examples/d_tough_choices.txt',
+    'examples/e_so_many_books.txt',
+    'examples/f_libraries_of_the_world.txt',
 ]
 
 
@@ -36,34 +34,35 @@ def read_input(lines: [str]):
     idx = 0
     libraries = list()
     while idx < len(lines):
-        if idx == 0:
-            elements = lines[idx].split()
-            n_books = elements[0]
-            n_libraries = elements[1]
-            days = int(elements[2])
+        if len(lines[idx]) > 0:
+            if idx == 0:
+                elements = lines[idx].split()
+                n_books = elements[0]
+                n_libraries = elements[1]
+                days = int(elements[2])
 
-            idx += 1
-        elif idx == 1:
-            books = build_books(lines[idx].split())
+                idx += 1
+            elif idx == 1:
+                books = build_books(lines[idx].split())
 
-            idx += 1
-        elif idx % 2 == 0:
-            first_line_elements = lines[idx].split()
-            second_line_elements = lines[idx+1].split()
+                idx += 1
+            elif idx % 2 == 0:
+                first_line_elements = lines[idx].split()
+                second_line_elements = lines[idx+1].split()
 
-            library_n_books = first_line_elements[0]
-            library_signup = first_line_elements[1]
-            library_books_day = first_line_elements[2]
+                library_n_books = first_line_elements[0]
+                library_signup = first_line_elements[1]
+                library_books_day = first_line_elements[2]
 
-            library_books = search_books_by_id(books, second_line_elements)
+                library_books = search_books_by_id(books, second_line_elements)
 
-            library = Library(id=idx//2-1, signup_time=library_signup, books_day=library_books_day, books=library_books)
-            libraries.append(library)
+                library = Library(id=idx//2-1, signup_time=library_signup, books_day=library_books_day, books=library_books)
+                libraries.append(library)
 
-            if int(library_n_books) != len(library_books):
-                raise Exception('Input data is not consistent')
+                if int(library_n_books) != len(library_books):
+                    raise Exception('Input data is not consistent')
 
-            idx += 2
+                idx += 2
 
     if int(n_books) != len(books) or int(n_libraries) != len(libraries):
         raise Exception('Input data is not consistent')
@@ -96,7 +95,7 @@ def start_sign_up_process(libraries, current_day):
     return None
 
 
-def get_daily_work(current_day, libraries, books, all_daily_work):
+def get_daily_work(current_day, libraries):
     """
     Calculate the process per day per library.
     Return a list of tuple and the total points from this day.
@@ -130,9 +129,35 @@ def get_daily_work(current_day, libraries, books, all_daily_work):
     return daily, daily_points
 
 
+def get_selected_libraries(all_daily_work):
+    tuple_list = []
+    for daily_work in all_daily_work:
+        tuple_list += daily_work
+
+    return list({library for library, _ in tuple_list})
+
+
+def write_library(library):
+    output = f'{library.id} {len(library.scanned_books)}\n'
+    output += f"{' '.join([str(book.id) for book in library.scanned_books])}\n"
+    return output
+
+
+def build_output(all_daily_work, filename):
+    selected_libraries = get_selected_libraries(all_daily_work)
+
+    output = f'{len(selected_libraries)}\n'
+    for library in selected_libraries:
+        output += write_library(library)
+
+    with open(filename[:-4] + '_output.txt', 'w') as file:
+        file.write(output)
+
+
 if __name__ == '__main__':
     total = 0
     for filename in filenames:
+        print(f'{filename}')
 
         with open(filename, 'r') as file:
             lines = file.readlines()
@@ -144,14 +169,15 @@ if __name__ == '__main__':
         all_daily_work = list()
         while current_day < days:
 
-            daily_work, daily_points = get_daily_work(current_day, libraries, books, all_daily_work)
+            daily_work, daily_points = get_daily_work(current_day, libraries)
 
             all_daily_work.append(daily_work)
             points += daily_points
             current_day += 1
+            
+        build_output(all_daily_work=all_daily_work, filename=filename)
 
+        print(f'{filename}: {points}')
         total += points
-
-        print(all_daily_work)
 
     print('Total: ' + str(total))

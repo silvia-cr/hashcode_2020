@@ -12,7 +12,6 @@ class Book(object):
         return not self.scanned
 
     def __repr__(self):
-        # return f'\n(Book {str(self.id)}: {str(self.score)})'
         return f'B{self.id}'
 
 
@@ -24,6 +23,7 @@ class Library(object):
         self.books_day = int(books_day)
         self.books = books
         self.signed_up_start_day = -1
+        self.scanned_books = list()
 
     def start_sign_up(self, current_day):
         self.signed_up_start_day = current_day
@@ -39,7 +39,6 @@ class Library(object):
 
     def scan_books(self):
         pending_books = [pending_book for pending_book in self.books if pending_book.can_scan()]
-        scanned_books = set()
         books_to_scan = []
         points = 0
 
@@ -50,11 +49,10 @@ class Library(object):
 
         for book in books_to_scan:
             book.scan()
-            scanned_books.add(book)
+            self.scanned_books.append(book)
             points += book.score
 
-        return scanned_books, points
+        return self.scanned_books, points
 
     def __repr__(self):
-        # return f'\n[Library {str(self.id)}: Books: {self.books}]'
         return f'L{self.id}'
